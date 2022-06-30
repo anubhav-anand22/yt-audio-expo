@@ -12,7 +12,11 @@ const Btn = ({
     radius = 3,
     txtStyle = {},
     elevation=10,
-    btnOuterOuterStyle={}
+    btnOuterOuterStyle={},
+    marginTop=0,
+    bg="",
+    color="",
+    textAlign="center"
 }) => {
     const { Colors } = useContext(Context);
 
@@ -20,7 +24,7 @@ const Btn = ({
         btn: {
             width,
             borderRadius: radius,
-            backgroundColor: Colors.colorOne,
+            backgroundColor: bg || Colors.colorOne,
             padding: 10,
         },
         btnOuter: {
@@ -30,8 +34,8 @@ const Btn = ({
         },
         txt: {
             width: "100%",
-            textAlign: "center",
-            color: Colors.colorThree,
+            textAlign,
+            color: color || Colors.colorThree,
             fontWeight: "500",
             ...txtStyle,
         },
@@ -41,6 +45,7 @@ const Btn = ({
             backgroundColor: "#00000000",
             width,
             borderRadius: radius,
+            marginTop,
             ...btnOuterOuterStyle,
         },
     });
