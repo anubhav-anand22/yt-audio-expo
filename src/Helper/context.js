@@ -5,7 +5,7 @@ const Context = createContext();
 
 export const Provider = ({children}) => {
     const [userInfo, setUserInfo] = useState({token: ""});
-    const [alertInfo, setAlert] = useState({});
+    const [alertInfo, setAlert] = useState({type: "n", message: "", show: false});
     const [loaderInfo, setLoaderInfo] = useState({show: false, message: ''});
     const [Colors, setColors] = useState(colors)
 
