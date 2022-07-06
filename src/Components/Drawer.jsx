@@ -142,7 +142,7 @@ function CustomDrawerContent(props) {
                 <Item
                     marginTop={20}
                     info={props}
-                    to="Home1"
+                    to="Home"
                     width={width - width / 4 - 10}
                     Colors={Colors}
                 />
@@ -257,7 +257,7 @@ function MyDrawer() {
                 drawerPosition: "right",
             }}
         >
-            <Drawer.Screen name="Home1" component={HomeScreen} />
+            <Drawer.Screen name="Home" options={{title: "YTA"}} component={HomeScreen} />
             <Drawer.Screen name="Home2" component={HomeScreen} />
             <Drawer.Screen name="Home3" component={HomeScreen} />
             <Drawer.Screen name="auth" component={AuthScreen} />
