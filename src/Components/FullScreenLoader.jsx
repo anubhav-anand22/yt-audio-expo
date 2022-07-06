@@ -12,10 +12,11 @@ const FullScreenLoader = () => {
             width,
             height: height,
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            backgroundColor: loaderInfo.bg || "rgba(0,0,0, 0.2)"
         },
         inner: {
-            alignItems: "center"
+            alignItems: "center",
         },
         txt: {
             marginTop: 10,
