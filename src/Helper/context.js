@@ -5,16 +5,9 @@ const Context = createContext();
 
 export const Provider = ({children}) => {
     const [userInfo, setUserInfo] = useState({token: ""});
-    const [alertInfo, setAlert] = useState({type: "n", message: "", show: false});
+    const [alertInfo, setAlertInfo] = useState({type: "n", message: "", show: false});
     const [loaderInfo, setLoaderInfo] = useState({show: false, message: ''});
     const [Colors, setColors] = useState(colors)
-
-    const setAlertInfo = (obj) => {
-        setAlert({
-            ...obj,
-            id: Math.random().toString()
-        })
-    }
 
     const value = {
         userInfo,

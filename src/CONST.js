@@ -9,3 +9,5 @@ export const colors = {
     colorGreen: "#008000",
     colorRed: "#ff0000",
 };
+
+export const baseURL = "https://ak22-audio.herokuapp.com"

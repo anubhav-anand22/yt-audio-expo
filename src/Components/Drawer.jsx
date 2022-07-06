@@ -4,7 +4,6 @@ import { Ionicons } from "@expo/vector-icons";
 import {
     createDrawerNavigator,
     DrawerContentScrollView,
-    DrawerItem,
 } from "@react-navigation/drawer";
 import HomeScreen from "../Screen/homeScreen";
 import Context from "../Helper/context";
@@ -16,12 +15,16 @@ import Animated, {
     Easing,
 } from "react-native-reanimated";
 import AuthScreen from "../Screen/authScreen";
+import { baseURL } from "../CONST";
+import * as SecureStore from "expo-secure-store";
+import axios from "axios";
 
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
     const { width } = useWindowDimensions();
-    const { Colors } = React.useContext(Context);
+    const { Colors, userInfo, setAlertInfo, setUserInfo, setLoaderInfo } =
+        React.useContext(Context);
 
     const styles = StyleSheet.create({
         main: {
@@ -56,6 +59,31 @@ function CustomDrawerContent(props) {
         },
     });
 
+    const logout = async () => {
+        try {
+            if (userInfo?.token) {
+                setLoaderInfo({show: true, message: "Loging out..."})
+                setUserInfo({ token: "" });
+                await SecureStore.deleteItemAsync("USER_INFO");
+                await axios({
+                    url: `${baseURL}/api/user/log-out`,
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${userInfo.token}`,
+                    },
+                });
+                setLoaderInfo({show: false, message: "Loging out..."})
+            }
+        } catch (e) {
+            console.log(e);
+            setAlertInfo({
+                type: "a",
+                message: "Something went wrong while " + type,
+                show: true,
+            });
+        }
+    };
+
     return (
         <DrawerContentScrollView {...props}>
             <View style={styles.main}>
@@ -72,24 +100,45 @@ function CustomDrawerContent(props) {
                         />
                     </View>
                 </View>
-                <View style={styles.authBtnCont}>
-                    <Btn
-                        txt="Log in"
-                        width={width - width / 4 - 10}
-                        radius={19}
-                        marginTop={10}
-                        bg={Colors.colorTwo}
-                        onPress={() => props.navigation.navigate("auth", {type: "Log in"})}
-                    />
-                    <Btn
-                        txt="Sign up"
-                        width={width - width / 4 - 10}
-                        radius={19}
-                        marginTop={10}
-                        bg={Colors.colorTwo}
-                        onPress={() => props.navigation.navigate("Home2", {type: "Sign up"})}
-                    />
-                </View>
+                {userInfo?.token ? (
+                    <View style={styles.authBtnCont}>
+                        <Btn
+                            txt="Log out"
+                            width={width - width / 4 - 10}
+                            radius={19}
+                            marginTop={10}
+                            bg={Colors.colorTwo}
+                            onPress={logout}
+                        />
+                    </View>
+                ) : (
+                    <View style={styles.authBtnCont}>
+                        <Btn
+                            txt="Log in"
+                            width={width - width / 4 - 10}
+                            radius={19}
+                            marginTop={10}
+                            bg={Colors.colorTwo}
+                            onPress={() =>
+                                props.navigation.navigate("auth", {
+                                    type: "Log in",
+                                })
+                            }
+                        />
+                        <Btn
+                            txt="Sign up"
+                            width={width - width / 4 - 10}
+                            radius={19}
+                            marginTop={10}
+                            bg={Colors.colorTwo}
+                            onPress={() =>
+                                props.navigation.navigate("auth", {
+                                    type: "Sign up",
+                                })
+                            }
+                        />
+                    </View>
+                )}
                 <Item
                     marginTop={20}
                     info={props}
@@ -105,12 +154,12 @@ function CustomDrawerContent(props) {
                     Colors={Colors}
                 />
                 <Item
-                marginTop={10}
-                info={props}
-                to="Home3"
-                width={width - width / 4 - 10}
-                Colors={Colors}
-            />
+                    marginTop={10}
+                    info={props}
+                    to="Home3"
+                    width={width - width / 4 - 10}
+                    Colors={Colors}
+                />
             </View>
         </DrawerContentScrollView>
     );
@@ -118,7 +167,7 @@ function CustomDrawerContent(props) {
 
 const Item = ({ info, label = "", to, width, Colors, marginTop }) => {
     const cN = info?.state?.routeNames[info?.state?.index];
-    const [currentName, setCurrentName] = React.useState('')
+    const [currentName, setCurrentName] = React.useState("");
     const translateX = useSharedValue(22);
     const translateY = useSharedValue(-22);
 
@@ -129,23 +178,27 @@ const Item = ({ info, label = "", to, width, Colors, marginTop }) => {
 
     const style = useAnimatedStyle(() => {
         return {
-            transform: [{rotate: '45deg'}, {translateX: withTiming(translateX.value, config)}, {translateY: withTiming(translateY.value, config)}]
+            transform: [
+                { rotate: "45deg" },
+                { translateX: withTiming(translateX.value, config) },
+                { translateY: withTiming(translateY.value, config) },
+            ],
         };
     });
 
     React.useEffect(() => {
-        setCurrentName(cN)
-    }, [cN])
+        setCurrentName(cN);
+    }, [cN]);
 
     React.useEffect(() => {
-        if(currentName === to) {
+        if (currentName === to) {
             translateX.value = 7;
             translateY.value = -7;
         } else {
             translateX.value = 22;
             translateY.value = -22;
         }
-    }, [currentName])
+    }, [currentName]);
 
     return (
         <View style={{ marginTop, position: "relative" }}>
@@ -157,8 +210,7 @@ const Item = ({ info, label = "", to, width, Colors, marginTop }) => {
                 onPress={() => {
                     setCurrentName(to);
                     setTimeout(() => {
-                        
-                    info.navigation.navigate(to)
+                        info.navigation.navigate(to);
                     }, 100);
                 }}
             />
@@ -169,15 +221,24 @@ const Item = ({ info, label = "", to, width, Colors, marginTop }) => {
                     position: "absolute",
                     overflow: "hidden",
                     top: 0,
-                    right: 0
+                    right: 0,
                 }}
             >
-                <Animated.View style={[{
-                    width: 38,
-                    height: 38,
-                    backgroundColor: Colors.colorOne,
-                    transform: [{rotate: '45deg'}, {translateX: 22}, {translateY: -22}]
-                }, style]}></Animated.View>
+                <Animated.View
+                    style={[
+                        {
+                            width: 38,
+                            height: 38,
+                            backgroundColor: Colors.colorOne,
+                            transform: [
+                                { rotate: "45deg" },
+                                { translateX: 22 },
+                                { translateY: -22 },
+                            ],
+                        },
+                        style,
+                    ]}
+                ></Animated.View>
             </View>
         </View>
     );
@@ -193,7 +254,7 @@ function MyDrawer() {
                 headerStyle: {
                     backgroundColor: Colors.colorOne,
                 },
-                drawerPosition: "right"
+                drawerPosition: "right",
             }}
         >
             <Drawer.Screen name="Home1" component={HomeScreen} />
