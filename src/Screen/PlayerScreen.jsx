@@ -19,10 +19,15 @@ import Btn from "../Components/Btn";
 const PlayerScreen = () => {
     const { params } = useRoute();
     const navigation = useNavigation();
-    const { setAlertInfo, setLoaderInfo, thumnailQuality, Colors } =
-        useContext(Context);
-    const [que, setQue] = useState([]);
-    const [currentInfo, setCurrentInfo] = useState({});
+    const {
+        setAlertInfo,
+        setLoaderInfo,
+        thumnailQuality,
+        Colors,
+        setCurrentPlayerInfo,
+        que,
+        setQue,
+    } = useContext(Context);
     const [moreInfoBtnInfo, setMoreInfoBtnInfo] = useState({ show: false });
     const { width, height } = useWindowDimensions();
 
@@ -33,7 +38,7 @@ const PlayerScreen = () => {
             if (shouldSetQue) {
                 setQue(res.data.related_videos);
             }
-            setCurrentInfo(res.data.videoDetails);
+            setCurrentPlayerInfo({ show: true, info: res.data.videoDetails });
             setLoaderInfo({ show: false });
         } catch (e) {
             console.log(e);
@@ -111,9 +116,9 @@ const PlayerScreen = () => {
                                 marginTop={10}
                                 width={width - 20}
                                 onPress={() => {
-                                    que.splice(moreInfoBtnInfo.index, 1)
+                                    que.splice(moreInfoBtnInfo.index, 1);
                                     setQue(que);
-                                    setMoreInfoBtnInfo({show: false})
+                                    setMoreInfoBtnInfo({ show: false });
                                 }}
                             />
                             <Btn
@@ -181,7 +186,7 @@ const Item = ({
         },
     });
     return (
-        <View style={{borderRadius: 10, overflow: "hidden"}}>
+        <View style={{ borderRadius: 10, overflow: "hidden" }}>
             <Touchable>
                 <View style={styles.main}>
                     <View>
