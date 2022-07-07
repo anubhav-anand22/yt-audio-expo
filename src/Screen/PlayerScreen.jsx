@@ -15,6 +15,7 @@ import Context from "../Helper/context";
 import { Ionicons } from "@expo/vector-icons";
 import Touchable from "../Components/Touchable";
 import Btn from "../Components/Btn";
+import { loadVideoData } from "../Helper/loadVideoData";
 
 const PlayerScreen = () => {
     const { params } = useRoute();
@@ -31,24 +32,7 @@ const PlayerScreen = () => {
     const [moreInfoBtnInfo, setMoreInfoBtnInfo] = useState({ show: false });
     const { width, height } = useWindowDimensions();
 
-    const loadVideoData = async ({ id, shouldSetQue = false }) => {
-        try {
-            setLoaderInfo({ message: "Loading video data...", show: true });
-            const res = await axios(`${baseURL}/api/video-info/${id}`);
-            if (shouldSetQue) {
-                setQue(res.data.related_videos);
-            }
-            setCurrentPlayerInfo({ show: true, info: res.data.videoDetails });
-            setLoaderInfo({ show: false });
-        } catch (e) {
-            console.log(e);
-            setAlertInfo({
-                type: "a",
-                message: "Something went wrong while loading data!",
-                show: true,
-            });
-        }
-    };
+    
 
     const loadPlaylistInfoData = async ({ id }) => {
         try {
@@ -56,7 +40,7 @@ const PlayerScreen = () => {
             setLoaderInfo({ message: "Loading list data...", show: true });
             const res = await axios(`${baseURL}/api/video-from-list/${id}`);
             setQue(res.data.items);
-            loadVideoData({ id: res?.data?.items[0]?.id });
+            loadVideoData({ id: res?.data?.items[0]?.id, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue });
             setLoaderInfo({ show: false });
         } catch (e) {
             console.log(e);
@@ -74,7 +58,7 @@ const PlayerScreen = () => {
         });
 
         if (params?.info?.v) {
-            loadVideoData({ id: params?.info?.v, shouldSetQue: true });
+            loadVideoData({ id: params?.info?.v, shouldSetQue: true, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue });
         } else if (params?.info?.list) {
             loadPlaylistInfoData({ id: params.info.list });
         }
