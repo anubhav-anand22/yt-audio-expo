@@ -18,6 +18,7 @@ import AuthScreen from "../Screen/authScreen";
 import { baseURL } from "../CONST";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
+import PlayerScreen from "../Screen/PlayerScreen";
 
 const Drawer = createDrawerNavigator();
 
@@ -261,6 +262,7 @@ function MyDrawer() {
             <Drawer.Screen name="Home2" component={HomeScreen} />
             <Drawer.Screen name="Home3" component={HomeScreen} />
             <Drawer.Screen name="auth" component={AuthScreen} />
+            <Drawer.Screen name="player" component={PlayerScreen} />
         </Drawer.Navigator>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
     View,
     Text,
@@ -14,11 +14,14 @@ import Txt from "../Components/Txt";
 import Btn from "../Components/Btn";
 import { useNavigation } from "@react-navigation/native";
 import { baseURL } from "../CONST";
+import Touchable from "../Components/Touchable";
+import { resolveYtUrl } from "../Helper/resolveYtUrl";
 
 const HomeScreen = () => {
-    const { Colors, userInfo } = useContext(Context);
+    const { Colors, userInfo, setAlertInfo } = useContext(Context);
     const { width, height } = useWindowDimensions();
     const navigation = useNavigation();
+    const [searchInfo, setSearchInfo] = useState("");
 
     const styles = StyleSheet.create({
         textInputCont: {
@@ -39,7 +42,7 @@ const HomeScreen = () => {
             paddingVertical: 3,
             borderTopLeftRadius: 5,
             borderBottomLeftRadius: 5,
-            width: width - width / 4 - 52,
+            width: width - 72,
         },
         searchIcon: {
             backgroundColor: Colors.colorTwo,
@@ -63,13 +66,38 @@ const HomeScreen = () => {
         },
         likedItemTxt: {
             fontSize: 16,
-            fontWeight: '400',
+            fontWeight: "400",
             marginLeft: 10,
         },
         likedItemContCont: {
-            paddingTop: 10
-        }
+            paddingTop: 10,
+        },
     });
+
+    const onSearchHandler = () => {
+        try {
+            if (searchInfo === "") return;
+            const info = resolveYtUrl(searchInfo);
+            console.log(info);
+            if (info.list || info.v) {
+                setSearchInfo("");
+                navigation.navigate("player", { info });
+            } else {
+                setAlertInfo({
+                    type: "n",
+                    message: "Error: not a correct url!",
+                    show: true,
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            setAlertInfo({
+                type: "a",
+                message: "Something went wrong while searching!",
+                show: true,
+            });
+        }
+    };
 
     return (
         <View>
@@ -77,14 +105,18 @@ const HomeScreen = () => {
                 <TextInput
                     style={styles.textInput}
                     placeholder="Search video or playlist"
+                    value={searchInfo}
+                    onChangeText={setSearchInfo}
                 />
-                <View style={styles.searchIcon}>
-                    <Ionicons
-                        name="search"
-                        size={26}
-                        color={Colors.colorThree}
-                    />
-                </View>
+                <Touchable onPress={onSearchHandler}>
+                    <View style={styles.searchIcon}>
+                        <Ionicons
+                            name="search"
+                            size={26}
+                            color={Colors.colorThree}
+                        />
+                    </View>
+                </Touchable>
             </View>
             {userInfo?.token ? (
                 <View style={styles.likedItemContCont}>

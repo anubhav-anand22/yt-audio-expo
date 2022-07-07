@@ -7,7 +7,8 @@ export const Provider = ({children}) => {
     const [userInfo, setUserInfo] = useState({token: ""});
     const [alertInfo, setAlertInfo] = useState({type: "n", message: "", show: false});
     const [loaderInfo, setLoaderInfo] = useState({show: false, message: ''});
-    const [Colors, setColors] = useState(colors)
+    const [Colors, setColors] = useState(colors);
+    const [thumnailQuality, setThumnailQuality] = useState('high')
 
     const value = {
         userInfo,
@@ -17,7 +18,9 @@ export const Provider = ({children}) => {
         loaderInfo,
         setLoaderInfo,
         Colors,
-        setColors
+        setColors,
+        thumnailQuality,
+        setThumnailQuality
     }
 
     return (
