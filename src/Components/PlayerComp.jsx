@@ -3,7 +3,6 @@ import {
     TouchableWithoutFeedback,
     useWindowDimensions,
     View,
-    Slider,
 } from "react-native";
 import Context from "../Helper/context";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +14,7 @@ import { loadVideoData } from "../Helper/loadVideoData";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store'
+import Slider from '@react-native-community/slider'
 
 const PlayerComp = () => {
     const { currentPlayerInfo, userInfo, setUserInfo, Colors, que, setCurrentPlayerInfo, setAlertInfo, setLoaderInfo, setQue } = useContext(Context);
