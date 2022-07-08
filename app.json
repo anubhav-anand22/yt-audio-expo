@@ -1,13 +1,16 @@
 {
   "expo": {
-    "name": "yt-audio-expo",
-    "slug": "yt-audio-expo",
+    "name": "YTA",
+    "slug": "yt-audio",
+    "owner": "ak22git7488",
+    "platforms": ["android"],
+    "githubUrl": "https://github.com/anubhav-anand22/yt-audio-expo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon1024.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icon1024.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -21,13 +24,15 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 1,
+      "package": "com.herokuapp.ak22_audio",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon1024.png",
         "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon1024.png"
     }
   }
 }
