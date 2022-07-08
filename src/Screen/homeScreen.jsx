@@ -38,7 +38,6 @@ const HomeScreen = () => {
             await SecureStore.setItemAsync('USER_INFO', JSON.stringify(res.data))
             setIsReloading(false);
         } catch (e) {
-            console.log(e);
             setIsReloading(false);
             setAlertInfo({show: true, message: "Something went wrong while reloading user!", type: 'a'});
         }
@@ -104,7 +103,6 @@ const HomeScreen = () => {
         try {
             if (searchInfo === "") return;
             const info = resolveYtUrl(searchInfo);
-            console.log(info);
             if (info.list || info.v) {
                 setSearchInfo("");
                 navigation.navigate("player", { info });
@@ -116,7 +114,6 @@ const HomeScreen = () => {
                 });
             }
         } catch (e) {
-            console.log(e);
             setAlertInfo({
                 type: "a",
                 message: "Something went wrong while searching!",

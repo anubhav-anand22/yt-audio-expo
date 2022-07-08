@@ -13,11 +13,21 @@ import { baseURL } from "../CONST";
 import { loadVideoData } from "../Helper/loadVideoData";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
-import * as SecureStore from 'expo-secure-store'
-import Slider from '@react-native-community/slider'
+import * as SecureStore from "expo-secure-store";
+import Slider from "@react-native-community/slider";
 
 const PlayerComp = () => {
-    const { currentPlayerInfo, userInfo, setUserInfo, Colors, que, setCurrentPlayerInfo, setAlertInfo, setLoaderInfo, setQue } = useContext(Context);
+    const {
+        currentPlayerInfo,
+        userInfo,
+        setUserInfo,
+        Colors,
+        que,
+        setCurrentPlayerInfo,
+        setAlertInfo,
+        setLoaderInfo,
+        setQue,
+    } = useContext(Context);
     const navigation = useNavigation();
     const { width } = useWindowDimensions();
     const [isPlaying, setPlaying] = useState(false);
@@ -32,15 +42,52 @@ const PlayerComp = () => {
     }, [currentPlayerInfo.show]);
 
     useEffect(() => {
-        if(userInfo?.liked?.video?.includes(currentPlayerInfo?.info?.videoId)) {
+        if (
+            userInfo?.liked?.video?.includes(currentPlayerInfo?.info?.videoId)
+        ) {
             setIsLiked(true);
         } else {
             setIsLiked(false);
         }
-    }, [userInfo])
+    }, [userInfo]);
+
+    const loadAudio = async (url = "") => {
+        await Audio.setAudioModeAsync({
+            staysActiveInBackground: true,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+        });
+
+        const sound = new Audio.Sound();
+
+        await sound.loadAsync(
+            { uri: url },
+            {
+                isLooping: false,
+                rate: rate / 10,
+                volume: 1,
+                shouldPlay: true,
+            },
+            false
+        );
+
+        sound._onPlaybackStatusUpdate = (f) => {
+            setDuration(f.durationMillis / 1000);
+            setCurrentTime(f.positionMillis / 1000);
+            if (f.isPlaying !== isPlaying) setPlaying(f.isPlaying);
+            if (f.didJustFinish) {
+                setPlaying(false);
+                next();
+            }
+        };
+
+        setAudio(sound);
+    };
 
     useEffect(() => {
-        // if (!currentPlayerInfo?.info?.videoId) return;
+        if (!currentPlayerInfo?.info?.videoId) return;
+
+        loadAudio(`${baseURL}/api/audio/${currentPlayerInfo.info.videoId}`);
 
         // Audio.setAudioModeAsync({
         //     staysActiveInBackground: true,
@@ -67,9 +114,9 @@ const PlayerComp = () => {
 
     useEffect(() => {
         return () => {
-            audio?.unloadAsync();
+            audio?.unloadAsync && audio?.unloadAsync();
         };
-    }, [audio])
+    }, [audio]);
 
     const Icon = ({
         name,
@@ -94,55 +141,89 @@ const PlayerComp = () => {
     };
 
     const IndexOf = (arr = [], cb) => {
-        for(let i in arr){
-            if(cb(arr[i])) return parseInt(i);
+        for (let i in arr) {
+            if (cb(arr[i])) return parseInt(i);
         }
-        return -1
-    }
+        return -1;
+    };
 
     const next = async () => {
-        const index = IndexOf(que, (e => e.id === currentPlayerInfo.info.videoId));
-        const data = (index === -1) ||  (index + 1 === que.length ) ? que[0] : que[index + 1];
-        await audio.unloadAsync();
-        await loadVideoData({id: data.id, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue})
-    }
+        const index = IndexOf(
+            que,
+            (e) => e.id === currentPlayerInfo.info.videoId
+        );
+        const data =
+            index === -1 || index + 1 === que.length ? que[0] : que[index + 1];
+        await audio?.unloadAsync();
+        await loadVideoData({
+            id: data.id,
+            setAlertInfo,
+            setCurrentPlayerInfo,
+            setLoaderInfo,
+            setQue,
+        });
+    };
 
     const previous = async () => {
-        const index = IndexOf(que, (e => e.id === currentPlayerInfo.info.videoId));
-        const data = (index === -1) || (index === 0) ? que[que.length - 1] : que[index - 1];
-        await audio.unloadAsync();
-        await loadVideoData({id: data.id, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue})
-    }
+        const index = IndexOf(
+            que,
+            (e) => e.id === currentPlayerInfo.info.videoId
+        );
+        const data =
+            index === -1 || index === 0 ? que[que.length - 1] : que[index - 1];
+        await audio?.unloadAsync();
+        await loadVideoData({
+            id: data.id,
+            setAlertInfo,
+            setCurrentPlayerInfo,
+            setLoaderInfo,
+            setQue,
+        });
+    };
 
-    const changeRate = (type = 'd') => {
-        let r = rate
-        if(type === 'i') {
-            r = r + 2 >= 50 ? 50 : r + 2
+    const changeRate = (type = "d") => {
+        let r = rate;
+        if (type === "i") {
+            r = r + 2 >= 50 ? 50 : r + 2;
         } else {
-            r = r - 2 <= 0 ? 0 : r - 2
+            r = r - 2 <= 0 ? 0 : r - 2;
         }
         setRate(r);
         r = r / 10;
-        audio.setRateAsync(r, true, 'Medium');
-        setAlertInfo({type: 'n', message: `Playback rate: ${r}`, show: true});
-    }
+        audio?.setRateAsync(r, true, "Medium");
+        setAlertInfo({ type: "n", message: `Playback rate: ${r}`, show: true });
+    };
 
     const likeHandler = async (type) => {
-        if(!userInfo?.token) return navigation.navigate('auth', {type: "Log in"});
-        setLoaderInfo({show: true});
+        if (!userInfo?.token)
+            return navigation.navigate("auth", { type: "Log in" });
+        setLoaderInfo({ show: true });
         const data = {
             liked: {
                 playlist: userInfo.liked.playlist,
-                video: type === 'l' ? [...userInfo.liked.video, currentPlayerInfo?.info?.videoId] : userInfo.liked.video.filter(e => e !== currentPlayerInfo?.info?.videoId)
-            }
-        }
-        const res = await axios({url: `${baseURL}/api/user/update-user`, method: "PATCH", "headers": {
-            "Authorization": `Bearer ${userInfo.token}`
-        }, data})
+                video:
+                    type === "l"
+                        ? [
+                              ...userInfo.liked.video,
+                              currentPlayerInfo?.info?.videoId,
+                          ]
+                        : userInfo.liked.video.filter(
+                              (e) => e !== currentPlayerInfo?.info?.videoId
+                          ),
+            },
+        };
+        const res = await axios({
+            url: `${baseURL}/api/user/update-user`,
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+            data,
+        });
         setUserInfo(res.data);
-        await SecureStore.setItemAsync("USER_INFO", JSON.stringify(res.data))
-        setLoaderInfo({show: false});
-    }
+        await SecureStore.setItemAsync("USER_INFO", JSON.stringify(res.data));
+        setLoaderInfo({ show: false });
+    };
 
     return (
         <View style={{ position: "relative" }}>
@@ -169,21 +250,24 @@ const PlayerComp = () => {
                             name="ios-pause"
                             onPress={() => {
                                 setPlaying(false);
-                                audio.pauseAsync();
+                                audio?.pauseAsync();
                             }}
                         />
                     ) : (
                         <Icon
                             name="ios-play"
-                            onPress={() => audio.playAsync()}
+                            onPress={() => audio?.playAsync()}
                         />
                     )}
                     <Icon name="caret-forward" onPress={next} />
-                    <Icon name="play-forward" onPress={() => changeRate('i')} />
+                    <Icon name="play-forward" onPress={() => changeRate("i")} />
                     {isLiked ? (
-                        <Icon name="heart" onPress={() => likeHandler('u')} />
+                        <Icon name="heart" onPress={() => likeHandler("u")} />
                     ) : (
-                        <Icon name="heart-outline" onPress={() => likeHandler('l')} />
+                        <Icon
+                            name="heart-outline"
+                            onPress={() => likeHandler("l")}
+                        />
                     )}
                 </View>
                 <Txt

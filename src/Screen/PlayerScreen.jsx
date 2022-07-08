@@ -16,7 +16,9 @@ import { Ionicons } from "@expo/vector-icons";
 import Touchable from "../Components/Touchable";
 import Btn from "../Components/Btn";
 import { loadVideoData } from "../Helper/loadVideoData";
-import * as SecureStore from 'expo-secure-store'
+import * as SecureStore from "expo-secure-store";
+import { DownloadFile } from "../Helper/DownloadFile";
+import { clearText } from "../Helper/ClearText";
 
 const PlayerScreen = () => {
     const { params } = useRoute();
@@ -30,7 +32,7 @@ const PlayerScreen = () => {
         que,
         setQue,
         userInfo,
-        setUserInfo
+        setUserInfo,
     } = useContext(Context);
     const [moreInfoBtnInfo, setMoreInfoBtnInfo] = useState({ show: false });
     const { width, height } = useWindowDimensions();
@@ -41,15 +43,13 @@ const PlayerScreen = () => {
         setLoaderInfo({ show: true });
         const data = {
             liked: {
-                playlist: type === "l"
-                ? [
-                      ...userInfo.liked.playlist,
-                      params.info.list,
-                  ]
-                : userInfo.liked.playlist.filter(
-                      (e) => e !== params.info.list
-                  ),
-                video: userInfo.liked.video
+                playlist:
+                    type === "l"
+                        ? [...userInfo.liked.playlist, params.info.list]
+                        : userInfo.liked.playlist.filter(
+                              (e) => e !== params.info.list
+                          ),
+                video: userInfo.liked.video,
             },
         };
         const res = await axios({
@@ -67,7 +67,6 @@ const PlayerScreen = () => {
 
     const loadPlaylistInfoData = async ({ id }) => {
         try {
-            console.log(id);
             setLoaderInfo({ message: "Loading list data...", show: true });
             const res = await axios(`${baseURL}/api/video-from-list/${id}`);
             setQue(res.data.items);
@@ -80,7 +79,6 @@ const PlayerScreen = () => {
             });
             setLoaderInfo({ show: false });
         } catch (e) {
-            console.log(e);
             setAlertInfo({
                 type: "a",
                 message: "Something went wrong while loading data!",
@@ -146,8 +144,14 @@ const PlayerScreen = () => {
     });
 
     const loadItem = async (id) => {
-        await loadVideoData({id, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue})
-    }
+        await loadVideoData({
+            id,
+            setAlertInfo,
+            setCurrentPlayerInfo,
+            setLoaderInfo,
+            setQue,
+        });
+    };
 
     return (
         <View>
@@ -170,7 +174,14 @@ const PlayerScreen = () => {
                 <Touchable onPress={() => setMoreInfoBtnInfo({ show: false })}>
                     <View style={styles.moreModalOuterView}>
                         <View>
-                            <Btn txt="Play" marginTop={10} width={width - 20} onPress={() => loadItem(moreInfoBtnInfo.info.id)} />
+                            <Btn
+                                txt="Play"
+                                marginTop={10}
+                                width={width - 20}
+                                onPress={() =>
+                                    loadItem(moreInfoBtnInfo.info.id)
+                                }
+                            />
                             <Btn
                                 txt="Remove from que"
                                 marginTop={10}
@@ -181,19 +192,41 @@ const PlayerScreen = () => {
                                     setMoreInfoBtnInfo({ show: false });
                                 }}
                             />
-                            {params?.info?.list && <Btn
-                                txt="Open related"
-                                marginTop={10}
-                                width={width - 20}
-                                onPress={() => {
-                                    navigation.navigate('player', {info: {v: moreInfoBtnInfo.info.id}})
-                                    setMoreInfoBtnInfo({show: false})
-                                }}
-                            />}
+                            {params?.info?.list && (
+                                <Btn
+                                    txt="Open related"
+                                    marginTop={10}
+                                    width={width - 20}
+                                    onPress={() => {
+                                        navigation.navigate("player", {
+                                            info: {
+                                                v: moreInfoBtnInfo.info.id,
+                                            },
+                                        });
+                                        setMoreInfoBtnInfo({ show: false });
+                                    }}
+                                />
+                            )}
                             <Btn
                                 txt="Download"
                                 marginTop={10}
                                 width={width - 20}
+                                onPress={() => {
+                                    setMoreInfoBtnInfo({show: false})
+                                    const name = clearText(
+                                        moreInfoBtnInfo.info.title + Math.random() + new Date().getTime()
+                                    )
+                                    setAlertInfo({show: true, message: `Started downloading ${name}...`, type: "n"})
+                                    DownloadFile({
+                                        uri: `${baseURL}/api/audio/${moreInfoBtnInfo.info.id}`,
+                                        name,
+                                    })
+                                    .then(() => {
+                                        setAlertInfo({show: true, message: `Finished downloading ${name}`, type: "n"})
+                                    }).catch((e) => {
+                                        setAlertInfo({show: true, message: `Something went wrong while downloading ${name}!`, type: "n"})
+                                    });
+                                }}
                             />
                         </View>
                     </View>
@@ -210,7 +243,7 @@ const Item = ({
     Colors,
     setMoreInfoBtnInfo,
     index,
-    loadItem
+    loadItem,
 }) => {
     const { width } = useWindowDimensions();
 
@@ -256,7 +289,6 @@ const Item = ({
         },
     });
 
-    
     return (
         <View style={{ borderRadius: 10, overflow: "hidden" }}>
             <Touchable onPress={() => loadItem(info.id)}>

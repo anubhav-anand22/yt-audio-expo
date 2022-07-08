@@ -11,7 +11,6 @@ export const loadVideoData = async ({ id, shouldSetQue = false, setLoaderInfo, s
         setCurrentPlayerInfo({ show: true, info: res.data.videoDetails });
         setLoaderInfo({ show: false });
     } catch (e) {
-        console.log(e);
         setAlertInfo({
             type: "a",
             message: "Something went wrong while loading data!",

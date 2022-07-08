@@ -114,7 +114,6 @@ const AuthScreen = () => {
 
             navigation.goBack();
         } catch (e) {
-            console.log(e);
             setAlertInfo({
                 type: "a",
                 message: "Something went wrong while " + type,

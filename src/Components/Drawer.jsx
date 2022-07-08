@@ -76,7 +76,6 @@ function CustomDrawerContent(props) {
                 setLoaderInfo({show: false, message: "Loging out..."})
             }
         } catch (e) {
-            console.log(e);
             setAlertInfo({
                 type: "a",
                 message: "Something went wrong while " + type,

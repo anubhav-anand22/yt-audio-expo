@@ -22,7 +22,6 @@ const Navigation = () => {
                 oldUserData?.updatedAt + oneDayInMs > currentTime &&
                 oldUserData?.token
             ) {
-                console.log("okkkk");
                 const res = await axios({
                     url: `${baseURL}/api/user/get-user-by-token`,
                     method: "GET",
