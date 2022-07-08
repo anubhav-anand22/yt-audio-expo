@@ -1,12 +1,13 @@
 import React, { useContext, useState } from "react";
 import {
     View,
-    Text,
     StyleSheet,
     TextInput,
     useWindowDimensions,
     FlatList,
     Image,
+    ScrollView,
+    RefreshControl
 } from "react-native";
 import Context from "../Helper/context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,12 +17,32 @@ import { useNavigation } from "@react-navigation/native";
 import { baseURL } from "../CONST";
 import Touchable from "../Components/Touchable";
 import { resolveYtUrl } from "../Helper/resolveYtUrl";
+import axios from "axios";
+import * as SecureStore from 'expo-secure-store'
 
 const HomeScreen = () => {
-    const { Colors, userInfo, setAlertInfo } = useContext(Context);
+    const { Colors, userInfo, setAlertInfo, setUserInfo, setLoaderInfo } = useContext(Context);
     const { width, height } = useWindowDimensions();
     const navigation = useNavigation();
     const [searchInfo, setSearchInfo] = useState("");
+    const [isReloading, setIsReloading] = useState(false);
+
+    const loadUser = async() => {
+        try {
+            if(!userInfo?.token) return;
+            setIsReloading(true);
+            const res = await axios({url: `${baseURL}/api/user/get-user-by-token`, method: "GET", headers: {
+                "Authorization": `Bearer ${userInfo?.token}`
+            }});
+            setUserInfo(res.data);
+            await SecureStore.setItemAsync('USER_INFO', JSON.stringify(res.data))
+            setIsReloading(false);
+        } catch (e) {
+            console.log(e);
+            setIsReloading(false);
+            setAlertInfo({show: true, message: "Something went wrong while reloading user!", type: 'a'});
+        }
+    }
 
     const styles = StyleSheet.create({
         textInputCont: {
@@ -68,6 +89,11 @@ const HomeScreen = () => {
             fontSize: 16,
             fontWeight: "400",
             marginLeft: 10,
+            backgroundColor: Colors.colorTwo,
+            padding: 7,
+            borderRadius: 10,
+            width: 120,
+            color: Colors.colorThree
         },
         likedItemContCont: {
             paddingTop: 10,
@@ -100,7 +126,8 @@ const HomeScreen = () => {
     };
 
     return (
-        <View>
+        <ScrollView refreshControl={<RefreshControl refreshing={isReloading} onRefresh={loadUser} />}>
+            <View style={{paddingBottom: 120}}>
             <View style={styles.textInputCont}>
                 <TextInput
                     style={styles.textInput}
@@ -129,6 +156,8 @@ const HomeScreen = () => {
                             renderItem={(e) => (
                                 <Item
                                     url={`https://i.ytimg.com/vi/${e.item}/hqdefault.jpg`}
+                                    onPress={() => navigation.navigate("player", { info: {v: e.item} })}
+                                    
                                 />
                             )}
                         />
@@ -142,6 +171,7 @@ const HomeScreen = () => {
                             renderItem={(e) => (
                                 <Item
                                     url={`${baseURL}/api/get-img-link-from-playlist-id/${e.item}`}
+                                    onPress={() => navigation.navigate("player", { info: {list: e.item} })}
                                 />
                             )}
                         />
@@ -160,22 +190,25 @@ const HomeScreen = () => {
                 </View>
             )}
         </View>
+        </ScrollView>
     );
 };
 
-const Item = (props) => {
-    console.log(props);
+const Item = ({url, onPress}) => {
+    const {width} = useWindowDimensions();
     return (
-        <View
+        <Touchable onPress={onPress}>
+            <View
             style={{
                 margin: 10,
             }}
         >
             <Image
-                style={{ width: 200, height: 120 }}
-                source={{ uri: props.url, method: "GET" }}
+                style={{ width: width - 50, height: (width - 50) * 0.6 }}
+                source={{ uri: url, method: "GET" }}
             />
         </View>
+        </Touchable>
     );
 };
 
