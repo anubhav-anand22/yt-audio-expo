@@ -145,6 +145,10 @@ const PlayerScreen = () => {
         },
     });
 
+    const loadItem = async (id) => {
+        await loadVideoData({id, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue})
+    }
+
     return (
         <View>
             <FlatList
@@ -158,6 +162,7 @@ const PlayerScreen = () => {
                         Colors={Colors}
                         setMoreInfoBtnInfo={setMoreInfoBtnInfo}
                         index={e.index}
+                        loadItem={loadItem}
                     />
                 )}
             />
@@ -165,7 +170,7 @@ const PlayerScreen = () => {
                 <Touchable onPress={() => setMoreInfoBtnInfo({ show: false })}>
                     <View style={styles.moreModalOuterView}>
                         <View>
-                            <Btn txt="Play" marginTop={10} width={width - 20} />
+                            <Btn txt="Play" marginTop={10} width={width - 20} onPress={() => loadItem(moreInfoBtnInfo.info.id)} />
                             <Btn
                                 txt="Remove from que"
                                 marginTop={10}
@@ -176,6 +181,15 @@ const PlayerScreen = () => {
                                     setMoreInfoBtnInfo({ show: false });
                                 }}
                             />
+                            {params?.info?.list && <Btn
+                                txt="Open related"
+                                marginTop={10}
+                                width={width - 20}
+                                onPress={() => {
+                                    navigation.navigate('player', {info: {v: moreInfoBtnInfo.info.id}})
+                                    setMoreInfoBtnInfo({show: false})
+                                }}
+                            />}
                             <Btn
                                 txt="Download"
                                 marginTop={10}
@@ -196,6 +210,7 @@ const Item = ({
     Colors,
     setMoreInfoBtnInfo,
     index,
+    loadItem
 }) => {
     const { width } = useWindowDimensions();
 
@@ -240,9 +255,11 @@ const Item = ({
             color: Colors.colorThree,
         },
     });
+
+    
     return (
         <View style={{ borderRadius: 10, overflow: "hidden" }}>
-            <Touchable>
+            <Touchable onPress={() => loadItem(info.id)}>
                 <View style={styles.main}>
                     <View>
                         <Image
