@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Touchable from "../Components/Touchable";
 import Btn from "../Components/Btn";
 import { loadVideoData } from "../Helper/loadVideoData";
+import * as SecureStore from 'expo-secure-store'
 
 const PlayerScreen = () => {
     const { params } = useRoute();
@@ -28,11 +29,41 @@ const PlayerScreen = () => {
         setCurrentPlayerInfo,
         que,
         setQue,
+        userInfo,
+        setUserInfo
     } = useContext(Context);
     const [moreInfoBtnInfo, setMoreInfoBtnInfo] = useState({ show: false });
     const { width, height } = useWindowDimensions();
 
-    
+    const likeHandler = async (type) => {
+        if (!userInfo?.token)
+            return navigation.navigate("auth", { type: "Log in" });
+        setLoaderInfo({ show: true });
+        const data = {
+            liked: {
+                playlist: type === "l"
+                ? [
+                      ...userInfo.liked.playlist,
+                      params.info.list,
+                  ]
+                : userInfo.liked.playlist.filter(
+                      (e) => e !== params.info.list
+                  ),
+                video: userInfo.liked.video
+            },
+        };
+        const res = await axios({
+            url: `${baseURL}/api/user/update-user`,
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+            data,
+        });
+        setUserInfo(res.data);
+        await SecureStore.setItemAsync("USER_INFO", JSON.stringify(res.data));
+        setLoaderInfo({ Show: false });
+    };
 
     const loadPlaylistInfoData = async ({ id }) => {
         try {
@@ -40,7 +71,13 @@ const PlayerScreen = () => {
             setLoaderInfo({ message: "Loading list data...", show: true });
             const res = await axios(`${baseURL}/api/video-from-list/${id}`);
             setQue(res.data.items);
-            loadVideoData({ id: res?.data?.items[0]?.id, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue });
+            loadVideoData({
+                id: res?.data?.items[0]?.id,
+                setAlertInfo,
+                setCurrentPlayerInfo,
+                setLoaderInfo,
+                setQue,
+            });
             setLoaderInfo({ show: false });
         } catch (e) {
             console.log(e);
@@ -55,10 +92,44 @@ const PlayerScreen = () => {
     useEffect(() => {
         navigation.setOptions({
             title: params?.info?.v ? "Yt video" : "Yt Playlist",
+            headerRight: () => {
+                if (params?.info?.list) {
+                    return userInfo?.liked?.playlist?.includes(
+                        params?.info?.list
+                    ) ? (
+                        <Ionicons
+                            name="heart"
+                            size={32}
+                            color={Colors.colorThree}
+                            style={{ marginRight: 10 }}
+                            onPress={() => likeHandler("u")}
+                        />
+                    ) : (
+                        <Ionicons
+                            name="heart-outline"
+                            size={32}
+                            color={Colors.colorThree}
+                            style={{ marginRight: 10 }}
+                            onPress={() => likeHandler("l")}
+                        />
+                    );
+                } else {
+                    return [];
+                }
+            },
         });
+    }, [params.info, userInfo]);
 
+    useEffect(() => {
         if (params?.info?.v) {
-            loadVideoData({ id: params?.info?.v, shouldSetQue: true, setAlertInfo, setCurrentPlayerInfo, setLoaderInfo, setQue });
+            loadVideoData({
+                id: params?.info?.v,
+                shouldSetQue: true,
+                setAlertInfo,
+                setCurrentPlayerInfo,
+                setLoaderInfo,
+                setQue,
+            });
         } else if (params?.info?.list) {
             loadPlaylistInfoData({ id: params.info.list });
         }

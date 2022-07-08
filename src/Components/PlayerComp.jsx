@@ -17,7 +17,7 @@ import axios from "axios";
 import * as SecureStore from 'expo-secure-store'
 
 const PlayerComp = () => {
-    const { currentPlayerInfo, userInfo, Colors, que, setCurrentPlayerInfo, setAlertInfo, setLoaderInfo, setQue } = useContext(Context);
+    const { currentPlayerInfo, userInfo, setUserInfo, Colors, que, setCurrentPlayerInfo, setAlertInfo, setLoaderInfo, setQue } = useContext(Context);
     const navigation = useNavigation();
     const { width } = useWindowDimensions();
     const [isPlaying, setPlaying] = useState(false);
@@ -40,29 +40,29 @@ const PlayerComp = () => {
     }, [userInfo])
 
     useEffect(() => {
-        if (!currentPlayerInfo?.info?.videoId) return;
+        // if (!currentPlayerInfo?.info?.videoId) return;
 
-        Audio.setAudioModeAsync({
-            staysActiveInBackground: true,
-            shouldDuckAndroid: true,
-            playThroughEarpieceAndroid: false
-        }).then(() => {
-            Audio.Sound.createAsync({
-                uri: `${baseURL}/api/audio/${currentPlayerInfo.info.videoId}`,
-            }).then((e) => {
-                setAudio(e.sound);
-                e.sound.playAsync();
-                e.sound._onPlaybackStatusUpdate = (f) => {
-                    setDuration(f.durationMillis / 1000);
-                    setCurrentTime(f.positionMillis / 1000);
-                    if (f.isPlaying !== isPlaying) setPlaying(f.isPlaying);
-                    if (f.didJustFinish) {
-                        setPlaying(false);
-                        next();
-                    };
-                };
-            });
-        });
+        // Audio.setAudioModeAsync({
+        //     staysActiveInBackground: true,
+        //     shouldDuckAndroid: true,
+        //     playThroughEarpieceAndroid: false
+        // }).then(() => {
+        //     Audio.Sound.createAsync({
+        //         uri: `${baseURL}/api/audio/${currentPlayerInfo.info.videoId}`,
+        //     }).then((e) => {
+        //         setAudio(e.sound);
+        //         e.sound.playAsync();
+        //         e.sound._onPlaybackStatusUpdate = (f) => {
+        //             setDuration(f.durationMillis / 1000);
+        //             setCurrentTime(f.positionMillis / 1000);
+        //             if (f.isPlaying !== isPlaying) setPlaying(f.isPlaying);
+        //             if (f.didJustFinish) {
+        //                 setPlaying(false);
+        //                 next();
+        //             };
+        //         };
+        //     });
+        // });
     }, [currentPlayerInfo]);
 
     useEffect(() => {
@@ -141,7 +141,7 @@ const PlayerComp = () => {
         }, data})
         setUserInfo(res.data);
         await SecureStore.setItemAsync("USER_INFO", JSON.stringify(res.data))
-        setLoaderInfo({Show: false});
+        setLoaderInfo({show: false});
     }
 
     return (
